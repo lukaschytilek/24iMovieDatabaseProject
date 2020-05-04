@@ -1,0 +1,6 @@
+framework module Pods_MovieDatabase24i_MovieDatabase24iUITests {
+  umbrella header "Pods-MovieDatabase24i-MovieDatabase24iUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}

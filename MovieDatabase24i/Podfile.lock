@@ -1,0 +1,34 @@
+PODS:
+  - AFNetworking (4.0.1):
+    - AFNetworking/NSURLSession (= 4.0.1)
+    - AFNetworking/Reachability (= 4.0.1)
+    - AFNetworking/Security (= 4.0.1)
+    - AFNetworking/Serialization (= 4.0.1)
+    - AFNetworking/UIKit (= 4.0.1)
+  - AFNetworking/NSURLSession (4.0.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (4.0.1)
+  - AFNetworking/Security (4.0.1)
+  - AFNetworking/Serialization (4.0.1)
+  - AFNetworking/UIKit (4.0.1):
+    - AFNetworking/NSURLSession
+  - XCDYouTubeKit (2.13.0)
+
+DEPENDENCIES:
+  - AFNetworking (~> 4.0)
+  - XCDYouTubeKit (~> 2.13)
+
+SPEC REPOS:
+  trunk:
+    - AFNetworking
+    - XCDYouTubeKit
+
+SPEC CHECKSUMS:
+  AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
+  XCDYouTubeKit: 4902fca1721b593112b6607c509a089e911294f3
+
+PODFILE CHECKSUM: de47acbeb7c836ef755a4d6d6c9a2c501aa072bb
+
+COCOAPODS: 1.9.1
