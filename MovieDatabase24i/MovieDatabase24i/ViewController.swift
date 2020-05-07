@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import AFNetworking
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     
@@ -19,7 +18,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var movies: Array<Movie> = Array<Movie>()
     var moviesFiltered: Array<Movie> = Array<Movie>()
     var genres: Dictionary = Dictionary<Int, String>()
-    var sessionManager: AFHTTPSessionManager?
     
     var originalHeight: CGFloat?
     
@@ -33,9 +31,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         movieTable.dataSource = self
         searchBar.delegate = self
         
-        initOperationManager()
         loadGenresAndPopularMovies()
-        //loadPopularMoviesFromMovieDatabase()
         
         originalHeight = self.view.frame.height
         
@@ -56,37 +52,26 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             if let sizeOfKeyboard = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue{
                 if self.view.frame.height == originalHeight {
                     self.view.frame = CGRect(x: self.view.frame.origin.x, y: self.view.frame.origin.y, width: self.view.frame.width, height: originalHeight! - sizeOfKeyboard.height)
-                    //self.view.layoutIfNeeded()
                 }
             }
         }
         if notification.name == UIResponder.keyboardDidHideNotification {
             if self.view.frame.height != originalHeight {
                 self.view.frame = CGRect(x: self.view.frame.origin.x, y: self.view.frame.origin.y, width: self.view.frame.width, height: originalHeight!)
-                //self.view.layoutIfNeeded()
             }
         }
     }
     
     func showErrorDialog(){
-        let errorDialog = UIAlertController(title: "Error", message: "No network connection", preferredStyle: .alert)
-        errorDialog.addAction(UIAlertAction(title: "Retry", style: .default, handler: { (UIAlertAction) in
+        appDelegate?.showNetworkErrorDialog(view: self, alertAction: UIAlertAction(title: "Retry", style: .default, handler: { (UIAlertAction) in
             self.dismiss(animated: true, completion: nil)
             
             self.loadGenresAndPopularMovies()
         }))
-        
-        self.present(errorDialog, animated: true, completion: nil)
-    }
-    
-    func initOperationManager() {
-        sessionManager = AFHTTPSessionManager.init(baseURL: URL.init(string: "https://api.themoviedb.org"))
-        sessionManager?.requestSerializer = AFJSONRequestSerializer.init()
-        sessionManager?.responseSerializer = AFJSONResponseSerializer.init()
     }
     
     func loadPopularMoviesFromMovieDatabase() {
-        sessionManager?.get(("/3/movie/popular" + appDelegate!.apiKey), parameters: nil, headers: nil, progress: nil, success: { (task: URLSessionDataTask, response: Any?) in
+        NetworkSessionManager.sharedNetworkInstance.getPopularMoviesFromMovieDatabase(success: { (task: URLSessionDataTask, response: Any?) in
             if(response != nil){
                 let popularDict: NSDictionary = response as! NSDictionary
                 if (popularDict.object(forKey: "results") != nil){
@@ -115,7 +100,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func loadGenresAndPopularMovies(){
-        sessionManager?.get(("/3/genre/movie/list" + appDelegate!.apiKey), parameters: nil, headers: nil, progress: nil, success: { (task: URLSessionDataTask, response: Any?) in
+        NetworkSessionManager.sharedNetworkInstance.getGenresAndPopularMovies(success: { (task: URLSessionDataTask, response: Any?) in
             if(response != nil){
                 let genresDict: NSDictionary = response as! NSDictionary
                 if (genresDict.object(forKey: "genres") != nil){

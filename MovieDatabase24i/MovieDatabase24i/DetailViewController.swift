@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import AFNetworking
 import XCDYouTubeKit
 import AVKit
 
@@ -21,7 +20,6 @@ class DetailViewController: UIViewController{
     
     var movie: Movie?
     var appDelegate: AppDelegate?
-    var sessionManager: AFHTTPSessionManager?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,13 +27,12 @@ class DetailViewController: UIViewController{
         appDelegate = UIApplication.shared.delegate as? AppDelegate
         
         updateMovieDetail()
-        initOperationManager()
     }
     
-    func initOperationManager() {
-        sessionManager = AFHTTPSessionManager.init(baseURL: URL.init(string: "https://api.themoviedb.org"))
-        sessionManager?.requestSerializer = AFJSONRequestSerializer.init()
-        sessionManager?.responseSerializer = AFJSONResponseSerializer.init()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        getMovieDetail()
     }
     
     func updateMovieDetail() {
@@ -46,8 +43,37 @@ class DetailViewController: UIViewController{
         overviewTxt?.text = movie?.overview
     }
     
+    func showErrorDialog(title: String){
+        appDelegate?.showNetworkErrorDialog(view: self, alertAction: UIAlertAction(title: title, style: .default, handler: { (action: UIAlertAction) in
+            if action.title == "Retry"{
+                self.getMovieDetail()
+            }
+            self.dismiss(animated: true, completion: nil)
+        }))
+    }
+    
+    func getMovieDetail(){
+        NetworkSessionManager.sharedNetworkInstance.getMovieDetail(movieId: (movie?.id ?? 0), success: { (task: URLSessionDataTask, response: Any?) in
+            if(response != nil){
+                let movieDict: NSDictionary = response as! NSDictionary
+                print(movieDict)
+                if movieDict.object(forKey: "title") != nil {
+                    self.movie?.name = movieDict.object(forKey: "title") as! String
+                    self.movie?.date = movieDict.object(forKey: "release_date") as! String
+                    self.movie?.overview = movieDict.object(forKey: "overview") as! String
+                    self.movie?.genres = self.returnGenresById(genreIds: movieDict.object(forKey: "genres") as! NSArray)
+                    
+                    self.updateMovieDetail()
+                }
+            }
+        }, failure: { (task: URLSessionDataTask?, error: Error) in
+            print(error)
+            self.showErrorDialog(title: "Retry")
+        })
+    }
+    
     func getTrailerURL(){
-        sessionManager?.get(("/3/movie/\(movie?.id ?? 0)/videos" + appDelegate!.apiKey), parameters: nil, headers: nil, progress: nil, success: { (task: URLSessionDataTask, response: Any?) in
+        NetworkSessionManager.sharedNetworkInstance.getMovieTrailerURL(movieId: (movie?.id ?? 0), success: { (task: URLSessionDataTask, response: Any?) in
             if(response != nil){
                 let videosDict: NSDictionary = response as! NSDictionary
                 if (videosDict.object(forKey: "results") != nil){
@@ -60,7 +86,23 @@ class DetailViewController: UIViewController{
             }
         }, failure: { (task: URLSessionDataTask?, error: Error) in
             print(error)
+            self.showErrorDialog(title: "Ok")
         })
+    }
+    
+    func returnGenresById(genreIds: NSArray) -> String {
+        var returnedGenre: String = String()
+        
+        for genresResult in genreIds{
+            let genreDict: NSDictionary = genresResult as! NSDictionary
+            returnedGenre += (genreDict.object(forKey: "name") as? String)! + ", "
+        }
+        
+        if returnedGenre.count > 0{
+            returnedGenre.removeLast(2)
+        }
+        
+        return returnedGenre
     }
     
     func playVideo(videoIdentifier: String){
