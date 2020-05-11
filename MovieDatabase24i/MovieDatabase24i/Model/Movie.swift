@@ -8,6 +8,8 @@
 
 import UIKit
 
+/**Struct of Movie
+*/
 struct Movie {
     var id: Int
     var name: String
@@ -17,6 +19,9 @@ struct Movie {
     var posterPath: String
     var posterImage: UIImage
     
+    /**
+        Returns transformed date from yyyy-MM-dd to dd.MM.yyyy
+    */
     func returnDate() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -24,6 +29,9 @@ struct Movie {
         return fixDateFormatter(date: date)
     }
     
+    /**
+        Returns date in new format
+    */
     func fixDateFormatter(date: Date) -> String{
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"

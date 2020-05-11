@@ -35,6 +35,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         originalHeight = self.view.frame.height
         
+        /// Notification when keyboard is shown or hidden
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardState), name: UIResponder.keyboardDidShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardState), name: UIResponder.keyboardDidHideNotification, object: nil)
     }
@@ -47,6 +48,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    /**
+        Update height of view if keyboard is shown or hidden, otherwise user will not see search bar
+        - Parameters:
+            - notification: Received Notification
+    */
     @objc func keyboardState(notification: Notification){
         if notification.name == UIResponder.keyboardDidShowNotification {
             if let sizeOfKeyboard = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue{
@@ -62,14 +68,23 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    /**
+        Display error dialog
+    */
     func showErrorDialog(){
         appDelegate?.showNetworkErrorDialog(view: self, alertAction: UIAlertAction(title: "Retry", style: .default, handler: { (UIAlertAction) in
             self.dismiss(animated: true, completion: nil)
             
             self.loadGenresAndPopularMovies()
-        }))
+        }), secondAlertAction: nil)
     }
     
+    /**
+        Loading popular movies from database
+     
+        If response is success, JSON with data is parsed and added to Array
+        If response is error, error dialog is displayed
+    */
     func loadPopularMoviesFromMovieDatabase() {
         NetworkSessionManager.sharedNetworkInstance.getPopularMoviesFromMovieDatabase(success: { (task: URLSessionDataTask, response: Any?) in
             if(response != nil){
@@ -99,8 +114,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         })
     }
     
+    /**
+        Loading genres from database
+     
+        If response is success, JSON with data is parsed, added to Dictionary and call method loadPopularMoviesFromMovieDatabase()
+        If response is error, error dialog is displayed
+    */
     func loadGenresAndPopularMovies(){
-        NetworkSessionManager.sharedNetworkInstance.getGenresAndPopularMovies(success: { (task: URLSessionDataTask, response: Any?) in
+        NetworkSessionManager.sharedNetworkInstance.getGenresFromDatabase(success: { (task: URLSessionDataTask, response: Any?) in
             if(response != nil){
                 let genresDict: NSDictionary = response as! NSDictionary
                 if (genresDict.object(forKey: "genres") != nil){
@@ -119,6 +140,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         })
     }
     
+    /**
+        Getting image from URL
+        - Parameters:
+            - url: String of URL
+            - imageView: ImageView for display image
+    */
     func getImageFromURL(url: String, imageView: UIImageView){
         guard let imgURL = URL(string: url) else {
             print("Error when creating URL")
@@ -137,6 +164,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    /**
+        Assign image for movie based on URL
+        - Parameters:
+            - url: String of URL
+            - image: Returned Image for movie
+    */
     func findMovieAndAssignImage(url: String, image: UIImage){
         var moviePos: Int = 0
         for movie in movies {
@@ -149,6 +182,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         movieTable.reloadData()
     }
     
+    /**
+        Return string of genres based on ID of genres
+        - Parameters:
+            - genreIds: Array of genres ID
+        - Returns: Return string of genres
+    */
     func returnGenresById(genreIds: Array<Int>) -> String {
         var returnedGenre: String = String()
         
@@ -165,6 +204,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return returnedGenre
     }
     
+    /**
+        Filter movies based on text in search bar
+        Filtered by movie name
+        - Parameters:
+            - searchText: Text from search bar
+    */
     func filterMovies(searchText: String){
         moviesFiltered = movies.filter({ (movie: Movie) -> Bool in
             return movie.name.lowercased().contains(searchText.lowercased())

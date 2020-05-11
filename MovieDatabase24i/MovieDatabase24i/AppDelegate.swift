@@ -35,10 +35,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
+    /**
+        Showing network error dialog
+        - Parameters:
+            - view: UIViewController
+            - alertAction: Custom UIAlertAction for specific behaviour after click
+            - secondAlertAction: Second custom UIAlertAction for specific behaviour after click
+    */
     func showNetworkErrorDialog(view: UIViewController,
-                                alertAction: UIAlertAction){
+                                alertAction: UIAlertAction,
+                                secondAlertAction: UIAlertAction?){
         let errorDialog = UIAlertController(title: "Error", message: "No network connection", preferredStyle: .alert)
         errorDialog.addAction(alertAction)
+        
+        if secondAlertAction != nil{
+            errorDialog.addAction(secondAlertAction!)
+        }
         
         view.present(errorDialog, animated: true, completion: nil)
     }

@@ -35,23 +35,41 @@ class DetailViewController: UIViewController{
         getMovieDetail()
     }
     
+    /**
+        Update movie details
+    */
     func updateMovieDetail() {
         posterImage?.image = movie?.posterImage
         titleLbl?.text = movie?.name
         genresLbl?.text = movie?.genres
         dateLbl?.text = movie?.returnDate()
         overviewTxt?.text = movie?.overview
+        
+        overviewTxt?.setContentOffset(.zero, animated: false)
     }
     
+    /**
+        Display error dialog with custom UIAlertAction title
+        - Parameters:
+            - title: Title of UIAlertAction button
+    */
     func showErrorDialog(title: String){
         appDelegate?.showNetworkErrorDialog(view: self, alertAction: UIAlertAction(title: title, style: .default, handler: { (action: UIAlertAction) in
             if action.title == "Retry"{
                 self.getMovieDetail()
             }
             self.dismiss(animated: true, completion: nil)
+        }), secondAlertAction: UIAlertAction(title: "Ok", style: .default, handler: { (action: UIAlertAction) in
+            self.dismiss(animated: true, completion: nil)
         }))
     }
     
+    /**
+        Getting details about actual movie
+     
+        If success, detail is parsed and after that is called updateMovieDetail() to update actual view
+        If failure, error dialog is displayed but its possible to retry request
+    */
     func getMovieDetail(){
         NetworkSessionManager.sharedNetworkInstance.getMovieDetail(movieId: (movie?.id ?? 0), success: { (task: URLSessionDataTask, response: Any?) in
             if(response != nil){
@@ -72,6 +90,12 @@ class DetailViewController: UIViewController{
         })
     }
     
+    /**
+        Getting URL for movie trailer
+     
+        If success, response is parsed and used first value from dictionary to play video
+        If failure, error dialog is displayed
+    */
     func getTrailerURL(){
         NetworkSessionManager.sharedNetworkInstance.getMovieTrailerURL(movieId: (movie?.id ?? 0), success: { (task: URLSessionDataTask, response: Any?) in
             if(response != nil){
@@ -90,6 +114,12 @@ class DetailViewController: UIViewController{
         })
     }
     
+    /**
+        Return string of genres based on ID of genres
+        - Parameters:
+            - genreIds: Array of genres ID
+        - Returns: Return string of genres
+    */
     func returnGenresById(genreIds: NSArray) -> String {
         var returnedGenre: String = String()
         
@@ -105,6 +135,13 @@ class DetailViewController: UIViewController{
         return returnedGenre
     }
     
+    /**
+        Playing video with XCDYoutubeClient
+     
+        If video identifier is valid and no error occured, video is played
+        - Parameters:
+            - videoIdentifier: String of video identifier
+    */
     func playVideo(videoIdentifier: String){
         XCDYouTubeClient.default().getVideoWithIdentifier(videoIdentifier) { (video: XCDYouTubeVideo?, error: Error?) in
             if error == nil {
@@ -127,6 +164,9 @@ class DetailViewController: UIViewController{
         self.dismiss(animated: true, completion: nil)
     }
     
+    /**
+        Button to call getTrailerURL, if success, video is played
+    */
     @IBAction func watchTrailer(_ sender: Any){
         getTrailerURL()
     }
